@@ -15,30 +15,35 @@
 </template>
 <script>
 import isMobile from '@/utils/isMobile.js';
+import i from '@/js/inventory.js';
+import id from '@/js/inventoryData.js';
 
 export default {
     name: 'Left',
+    props: {
+        sharedData: {
+            type: String,
+            required: true
+        }
+    },
     mixins: [isMobile],
     data() {
         return {
-            inventory: [
-                {
-                    name: '核苷酸',
-                    count: 0,
-                    rate: '0/s',
+            inventory: i,
+            inventoryData: id,
+        }
+    },
+    watch: {
+        sharedData(newValue, oldValue) {
+            this.inventory.forEach(item => {
+                if (item.id == newValue.split("-")[0]) {
+                    item.count++;
                 }
-            ],
-            inventoryData: [
-                {
-                    count: 0,
-                    rate: 0,
-                }
-            ],
+            })
         }
     },
     created() {
         this.initInventory();
-        this.refreshInventory();
     },
     methods: {
         initInventory() {

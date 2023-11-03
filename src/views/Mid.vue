@@ -9,9 +9,20 @@
                     <el-tabs v-model="tabs.active2">
                         <el-tab-pane label="分子" name="1-1">
                             <div class="button-layout">
-                                <el-button id="1-1-1" class="button-style button-usable"
-                                    @click="buttonClick($event)">核苷酸</el-button>
-                                <el-button class="button-style button-unusable">核苷酸</el-button>
+                                <el-button id="linsuan" class="button-style button-usable"
+                                    @click="buttonClick($event)">磷酸</el-button>
+                                <el-button id="hetang" class="button-style button-usable"
+                                    @click="buttonClick($event)">核糖</el-button>
+                                <el-button id="xianpl" class="button-style button-usable"
+                                    @click="buttonClick($event)">腺嘌呤(A)</el-button>
+                                <el-button id="niaopl" class="button-style button-usable"
+                                    @click="buttonClick($event)">鸟嘌呤(G)</el-button>
+                                <el-button id="baomd" class="button-style button-usable"
+                                    @click="buttonClick($event)">胞嘧啶(C)</el-button>
+                                <el-button id="niaomd" class="button-style button-usable"
+                                    @click="buttonClick($event)">尿嘧啶(U)</el-button>
+                                <el-button id="xiongxianmd" class="button-style button-usable"
+                                    @click="buttonClick($event)">胸腺嘧啶(T)</el-button>
                             </div>
                         </el-tab-pane>
                         <el-tab-pane v-if="false" label="" name="1-2"></el-tab-pane>
@@ -34,7 +45,7 @@ import isMobile from '@/utils/isMobile.js';
 export default {
     name: 'Mid',
     mixins: [isMobile],
-
+    emits: ['update-data'],
     data() {
         return {
             tabs: {
@@ -49,7 +60,8 @@ export default {
     methods: {
         buttonClick(event) {
             const id = event.currentTarget.id;
-            this.$emit('buttonClick', id);
+            const time = new Date().getTime();
+            this.$emit('update-data', id + "-" + time);
         }
     },
 }

@@ -10,9 +10,9 @@
       </div>
     </div>
     <div class="wrapper">
-      <Left></Left>
+      <Left :shared-data="sharedData"></Left>
       <Divider />
-      <Mid></Mid>
+      <Mid @update-data="updateData"></Mid>
       <Divider />
       <Right></Right>
     </div>
@@ -38,7 +38,8 @@ export default {
   },
   data() {
     return {
-      selectedComponent: null
+      selectedComponent: null,
+      sharedData: ''
     }
   },
   mounted() {
@@ -50,6 +51,9 @@ export default {
   methods: {
     showComponent(componentName) {
       this.selectedComponent = componentName;
+    },
+    updateData(data) {
+      this.sharedData = data;
     }
   },
 }
