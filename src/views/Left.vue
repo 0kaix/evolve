@@ -15,13 +15,12 @@
 </template>
 <script>
 import isMobile from '@/utils/isMobile.js';
-import i from '@/js/inventory.js';
-import id from '@/js/inventoryData.js';
+import inventory from '@/js/inventory.js';
 
 export default {
     name: 'Left',
     props: {
-        sharedData: {
+        transferredData: {
             type: String,
             required: true
         }
@@ -29,37 +28,30 @@ export default {
     mixins: [isMobile],
     data() {
         return {
-            inventory: i,
-            inventoryData: id,
+            inventory: inventory,
         }
     },
     watch: {
-        sharedData(newValue, oldValue) {
-            this.inventory.forEach(item => {
-                if (item.id == newValue.split("-")[0]) {
-                    item.count++;
-                }
-            })
+        transferredData(newValue, oldValue) {
+            const item = this.inventory.find(item => item.id == newValue.split("-")[0]);
+            if (item) {
+                item.count++;
+            }
         }
     },
     created() {
-        this.initInventory();
+        this.refreshInventory()
     },
     methods: {
-        initInventory() {
-            this.inventory.forEach((item, index) => {
-                item.count = this.inventoryData[index].count;
-                item.rate = this.inventoryData[index].rate + "/s";
-            })
-        },
         refreshInventory() {
             setInterval(() => {
-                this.inventoryData.forEach(item => {
-                    if (item.rate != 0) {
-                        item.count = item.count + item.rate;
+                this.inventory.forEach(item => {
+                    let rate = Number(item.rate.replace("/s", ""));
+                    if (rate != 0) {
+                        item.count = item.count + rate;
+                        item.count = Number(item.count.toFixed(2));
                     }
                 })
-                this.initInventory();
             }, 1000)
         }
     },
@@ -76,12 +68,12 @@ export default {
     word-break: break-all;
 }
 
-::v-deep .el-table tbody tr {
+:deep(.el-table tbody tr) {
     pointer-events: none;
 }
 
-::v-deep .el-table .cell,
-.el-table th div {
+:deep(.el-table .cell),
+:deep(.el-table th div) {
     font-size: 0.8rem;
     line-height: 1.2;
     text-overflow: ellipsis;

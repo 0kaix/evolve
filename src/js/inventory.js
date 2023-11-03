@@ -3,7 +3,7 @@ export default [
         id: "linsuan",
         name: '磷酸',
         count: 0,
-        rate: '0/s',
+        rate: '1/s',
     },
     {
         id: "hetang",

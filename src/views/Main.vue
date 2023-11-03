@@ -10,9 +10,9 @@
       </div>
     </div>
     <div class="wrapper">
-      <Left :shared-data="sharedData"></Left>
+      <Left :transferred-data="transferredData"></Left>
       <Divider />
-      <Mid @update-data="updateData"></Mid>
+      <Mid @transfer-data="transferData"></Mid>
       <Divider />
       <Right></Right>
     </div>
@@ -39,7 +39,7 @@ export default {
   data() {
     return {
       selectedComponent: null,
-      sharedData: ''
+      transferredData: ''
     }
   },
   mounted() {
@@ -52,8 +52,8 @@ export default {
     showComponent(componentName) {
       this.selectedComponent = componentName;
     },
-    updateData(data) {
-      this.sharedData = data;
+    transferData(data) {
+      this.transferredData = data;
     }
   },
 }
