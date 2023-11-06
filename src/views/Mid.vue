@@ -5,33 +5,28 @@
     <div v-else class="box">
         <div class="content">
             <el-tabs class="outer-tabs" v-model="tabs.active1">
-                <el-tab-pane label="进化" name="1">
+                <el-tab-pane :label="$t('evolve')" name="1">
                     <el-tabs v-model="tabs.active2">
-                        <el-tab-pane label="分子" name="1-1">
+                        <el-tab-pane :label="$t('fenzi')" name="1-1">
+
                             <div class="button-layout">
-                                <el-button id="linsuan" class="button-style button-usable"
-                                    @click="buttonClick($event)">磷酸</el-button>
-                                <el-button id="hetang" class="button-style button-usable"
-                                    @click="buttonClick($event)">核糖</el-button>
-                                <el-button id="xianpl" class="button-style button-usable"
-                                    @click="buttonClick($event)">腺嘌呤(A)</el-button>
-                                <el-button id="niaopl" class="button-style button-usable"
-                                    @click="buttonClick($event)">鸟嘌呤(G)</el-button>
-                                <el-button id="baomd" class="button-style button-usable"
-                                    @click="buttonClick($event)">胞嘧啶(C)</el-button>
-                                <el-button id="niaomd" class="button-style button-usable"
-                                    @click="buttonClick($event)">尿嘧啶(U)</el-button>
-                                <el-button id="xiongxianmd" class="button-style button-usable"
-                                    @click="buttonClick($event)">胸腺嘧啶(T)</el-button>
+                                <el-button id="linsuan" class="button-style button-usable" @click="buttonClick($event)">{{
+                                    $t('linsuan') }}</el-button>
+                                <el-button id="hetang" class="button-style button-usable" @click="buttonClick($event)">{{
+                                    $t('hetang') }}</el-button>
+                                <el-button id="jianji" class="button-style button-usable" @click="buttonClick($event)">{{
+                                    $t('jianji') }}</el-button>
+                                <el-button id="anjisuan" class="button-style button-usable" @click="buttonClick($event)">{{
+                                    $t('anjisuan') }}</el-button>
                             </div>
                             <div class="button-layout">
                                 <el-badge ref="badge" :value="count.rna" class="button-badge">
-                                    <el-button id="rna" class="button-style button-usable"
-                                        @click="buttonClick($event)">RNA</el-button>
+                                    <el-button id="rna" class="button-style button-usable" @click="buttonClick($event)">{{
+                                        $t('rna') }}</el-button>
                                 </el-badge>
                                 <el-badge :value="count.dna" class="button-badge">
-                                    <el-button id="dna" class="button-style button-usable"
-                                        @click="buttonClick($event)">DNA</el-button>
+                                    <el-button id="dna" class="button-style button-usable" @click="buttonClick($event)">{{
+                                        $t('dna') }}</el-button>
                                 </el-badge>
                             </div>
                         </el-tab-pane>
@@ -40,7 +35,11 @@
                         <el-tab-pane v-if="false" label="" name="1-4"></el-tab-pane>
                     </el-tabs>
                 </el-tab-pane>
-                <el-tab-pane label="设置" name="2">设置</el-tab-pane>
+                <el-tab-pane :label="$t('shezhi')" name="2">
+                    <el-select v-model="language" @change="changeLanguage">
+                        <el-option v-for="item in languages" :key="item.value" :label="item.label" :value="item.value" />
+                    </el-select>
+                </el-tab-pane>
                 <el-tab-pane label="" name="3"></el-tab-pane>
                 <el-tab-pane label="" name="4"></el-tab-pane>
             </el-tabs>
@@ -51,13 +50,17 @@
 </template>
 <script>
 import isMobile from '@/utils/isMobile.js';
-
+import { i18n } from '@/main.js'
+import { getInventorys } from '@/js/inventorys.js';
+import weights from '@/js/weights.js';
 export default {
     name: 'Mid',
     mixins: [isMobile],
     emits: ['transfer-data'],
     data() {
         return {
+            inventorys: getInventorys(),
+            weights: weights,
             tabs: {
                 active1: "1",
                 active2: "1-1"
@@ -65,16 +68,24 @@ export default {
             count: {
                 rna: 0,
                 dna: 0
-            }
+            },
+            language: "简体中文",
+            languages: [
+                {
+                    value: 'zh-CN',
+                    label: '简体中文'
+                },
+                {
+                    value: 'en-US',
+                    label: 'English'
+                }
+            ],
         }
-    },
-    created() {
-
     },
     methods: {
         buttonClick(event) {
             const id = event.currentTarget.id;
-            if (["linsuan", "hetang", "xianpl", "niaopl", "baomd", "niaomd", "xiongxianmd"].includes(id)) {
+            if (["linsuan", "hetang", "jianji", "anjisuan"].includes(id)) {
                 const time = new Date().getTime();
                 this.$emit('transfer-data', id + "-" + time);
             } else if (["rna", "dna"].includes(id)) {
@@ -87,8 +98,11 @@ export default {
                 } else if (this.count[id] > 9) {
                     content.style.right = '1.5rem';
                 }
-
             }
+        },
+        changeLanguage(label) {
+            i18n.global.locale = label;
+            this.$emit('transfer-data', getInventorys());
         }
     },
 }
@@ -127,6 +141,11 @@ export default {
 .button-layout {
     text-align: left;
     padding-bottom: 1rem;
+    width: 100%;
+}
+
+.button-style {
+    width: 10vw
 }
 
 .button-style,
