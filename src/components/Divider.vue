@@ -1,11 +1,6 @@
 <template>
   <el-divider direction="vertical" />
 </template>
-<script>
-export default {
-  name: 'Divider'
-}
-</script>
 <style>
 .el-divider--vertical {
   display: inline-block;

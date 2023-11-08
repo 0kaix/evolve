@@ -9,14 +9,11 @@
     </div>
     <router-view />
 </template>
-<script>
-import isMobile from '@/utils/isMobile.js';
+<script setup>
+import useIsMobile from '@/utils/isMobile.js';
 
-export default {
-    name: 'Right',
-    mixins: [isMobile],
+const { isMobile } = useIsMobile();
 
-}
 </script>
 <style scoped>
 .box {

@@ -5,28 +5,49 @@
     <div v-else class="box">
         <div class="content">
             <el-tabs class="outer-tabs" v-model="tabs.active1">
-                <el-tab-pane :label="$t('evolve')" name="1">
+                <el-tab-pane :label="$t('jinhua')" name="1">
+                    <el-button id="jinhuayinzi" class="button-style button-usable progress-button"
+                        @click="buttonClick($event)">
+                        {{ $t('jinhuayinzi') }}
+                        <div class="progress-bar" v-if="buttons.jinhuayinzi.isProcessing"></div>
+                    </el-button>
                     <el-tabs v-model="tabs.active2">
-                        <el-tab-pane :label="$t('fenzi')" name="1-1">
+                        <el-tab-pane :label="$t('weishengwu')" name="1-1">
+                            <div class="button-layout"
+                                v-if="buttons.weichi.isShow || buttons.fuzhi.isShow || buttons.shiying.isShow">
+                                <div class="button-title">
+                                    {{ $t('yuanshishengming') }}
+                                </div>
+                                <!-- <el-button id="weichi" class="button-style button-usable" @click="buttonClick($event)"
+                                    v-if="buttons.weichi.isShow">
+                                    {{ $t('weichi') }}
+                                </el-button>
+                                <el-button id="shiying" class="button-style button-usable " @click="buttonClick($event)"
+                                    v-if="buttons.shiying.isShow">
+                                    {{ $t('shiying') }}
+                                </el-button>
+                                <el-button id="fuzhi" class="button-style button-usable" @click="buttonClick($event)"
+                                    v-if="buttons.fuzhi.isShow">
+                                    {{ $t('fuzhi') }}
+                                </el-button> -->
 
-                            <div class="button-layout">
-                                <el-button id="linsuan" class="button-style button-usable" @click="buttonClick($event)">{{
-                                    $t('linsuan') }}</el-button>
-                                <el-button id="hetang" class="button-style button-usable" @click="buttonClick($event)">{{
-                                    $t('hetang') }}</el-button>
-                                <el-button id="jianji" class="button-style button-usable" @click="buttonClick($event)">{{
-                                    $t('jianji') }}</el-button>
-                                <el-button id="anjisuan" class="button-style button-usable" @click="buttonClick($event)">{{
-                                    $t('anjisuan') }}</el-button>
+                                <span v-for="(button, index) in hasIsShowButtonAll2Array" :key="button.name">
+                                    <el-button :id="button.name" :ref="setButtonRef" class="button-style button-usable"
+                                        @click="buttonClick($event)" v-if="button.isShow" style="margin-right: 1rem;">
+                                        {{ $t(button.name) }}
+                                    </el-button>
+
+                                    <Popover :virtual-ref="buttonRefs[index]">
+                                        <template #title>{{ button.title }}</template>
+                                        <template #subtitle>{{ button.subtitle }}</template>
+                                        <template #content>{{ button.content }}</template>
+                                    </Popover>
+                                </span>
                             </div>
                             <div class="button-layout">
-                                <el-badge ref="badge" :value="count.rna" class="button-badge">
-                                    <el-button id="rna" class="button-style button-usable" @click="buttonClick($event)">{{
-                                        $t('rna') }}</el-button>
-                                </el-badge>
-                                <el-badge :value="count.dna" class="button-badge">
-                                    <el-button id="dna" class="button-style button-usable" @click="buttonClick($event)">{{
-                                        $t('dna') }}</el-button>
+                                <el-badge ref="badge" :value="count.ceshi" class="button-badge">
+                                    <el-button id="ceshi" class="button-style button-usable" @click="buttonClick($event)">
+                                        {{ $t('ceshi') }}</el-button>
                                 </el-badge>
                             </div>
                         </el-tab-pane>
@@ -36,75 +57,220 @@
                     </el-tabs>
                 </el-tab-pane>
                 <el-tab-pane :label="$t('shezhi')" name="2">
-                    <el-select v-model="language" @change="changeLanguage">
-                        <el-option v-for="item in languages" :key="item.value" :label="item.label" :value="item.value" />
+                    <el-select v-model="language" @change="selectLanguage">
+                        <el-option v-for="language in languages" :key="language.value" :label="language.label"
+                            :value="language.value" />
                     </el-select>
                 </el-tab-pane>
                 <el-tab-pane label="" name="3"></el-tab-pane>
                 <el-tab-pane label="" name="4"></el-tab-pane>
             </el-tabs>
         </div>
+
+        <!-- <div v-for="(item, index) in items" :key="item.id">
+            <el-button :ref="setButtonRef">{{ item.text }}</el-button>
+            <Popover :virtual-ref="buttonRefs[index]">
+                <template #title>{{ item.title }}</template>
+                <template #subtitle>{{ item.subtitle }}</template>
+                <template #content>{{ item.content }}</template>
+            </Popover>
+        </div> -->
     </div>
 
     <router-view />
 </template>
-<script>
-import isMobile from '@/utils/isMobile.js';
+<script setup>
+import useIsMobile from '@/utils/isMobile.js';
 import { i18n } from '@/main.js'
-import { getInventorys } from '@/js/inventorys.js';
-import weights from '@/js/weights.js';
-export default {
-    name: 'Mid',
-    mixins: [isMobile],
-    emits: ['transfer-data'],
-    data() {
-        return {
-            inventorys: getInventorys(),
-            weights: weights,
-            tabs: {
-                active1: "1",
-                active2: "1-1"
-            },
-            count: {
-                rna: 0,
-                dna: 0
-            },
-            language: "简体中文",
-            languages: [
-                {
-                    value: 'zh-CN',
-                    label: '简体中文'
-                },
-                {
-                    value: 'en-US',
-                    label: 'English'
-                }
-            ],
-        }
+import { ref, computed, watch, nextTick } from 'vue';
+import { getInventorys } from '@/js/inventory/index.js';
+import Popover from "@/components/Popover.vue";
+
+const { isMobile } = useIsMobile();
+
+const emit = defineEmits(['data-transmission'])
+const items = ref([
+    {
+        text: 'Button 1',
+        title: 'Title 1',
+        subtitle: 'Subtitle 1',
+        content: 'Content 1',
     },
-    methods: {
-        buttonClick(event) {
-            const id = event.currentTarget.id;
-            if (["linsuan", "hetang", "jianji", "anjisuan"].includes(id)) {
-                const time = new Date().getTime();
-                this.$emit('transfer-data', id + "-" + time);
-            } else if (["rna", "dna"].includes(id)) {
-                this.count[id] += 1;
-                const content = this.$refs.badge.$el.querySelector('.el-badge__content');
-                if (this.count[id] > 999) {
-                    content.style.right = '2.3rem';
-                } else if (this.count[id] > 99) {
-                    content.style.right = '1.9rem';
-                } else if (this.count[id] > 9) {
-                    content.style.right = '1.5rem';
-                }
-            }
-        },
-        changeLanguage(label) {
-            i18n.global.locale = label;
-            this.$emit('transfer-data', getInventorys());
-        }
+    {
+        text: 'Button 2',
+        title: 'Title 2',
+        subtitle: 'Subtitle 2',
+        content: 'Content 2',
     },
+    {
+        text: 'Button 3',
+        title: 'Title 3',
+        subtitle: 'Subtitle 3',
+        content: 'Content 3',
+    }
+])
+const buttonRefList = ref([])
+const setButtonRef = element => {
+    if (element) {
+        buttonRefList.value.push(element)
+    }
+}
+const buttonRefs = computed(() => {
+    return buttonRefList.value
+})
+
+const language = ref("简体中文")//语言
+const languages = ref([
+    {
+        value: 'zh-CN',
+        label: '简体中文'
+    },
+    {
+        value: 'zh-TW',
+        label: '繁體中文'
+    },
+    {
+        value: 'en-US',
+        label: 'English'
+    },
+    {
+        value: 'ru-RU',
+        label: 'русский'
+    },
+    {
+        value: 'ja-JP',
+        label: '日本語'
+    },
+    {
+        value: 'ko-KR',
+        label: '한국어'
+    },
+])//语言列表
+const inventorys = ref(getInventorys())//库存
+const tabs = ref({
+    active1: "1",
+    active2: "1-1"
+})//tab标签页
+const count = ref({
+    ceshi: 0,
+})//按钮点击次数
+const buttons = ref({
+    jinhuayinzi: {
+        name: "jinhuayinzi",
+        isProcessing: false,
+    },
+    weichi: {
+        name: "weichi",
+        title: 'Title 1',
+        subtitle: 'Subtitle 1',
+        content: 'Content 1',
+        isShow: true
+    },
+    fuzhi: {
+        name: "fuzhi",
+        title: 'Title 2',
+        subtitle: 'Subtitle 2',
+        content: 'Content 2',
+        isShow: true
+    },
+    shiying: {
+        name: "shiying",
+        title: 'Title 3',
+        subtitle: 'Subtitle 3',
+        content: 'Content 3',
+        isShow: true
+    },
+})
+
+const animationDurations = ref({
+    jinhuayinzi: 10,
+})//进度条动画时长
+
+const hasIsShowButtonAll = computed(() => {
+    return Object.fromEntries(Object.entries(buttons.value).filter(([prop, button]) => {
+        return button.hasOwnProperty('isShow');
+    }).map(([prop, button]) => {
+        return [prop, button];
+    }));
+});//找到所有有isShow属性的按钮，返回该按钮的对象
+
+const hasIsShowButtonAll2Array = computed(() => {
+    return Object.entries(hasIsShowButtonAll.value).map(([prop, button]) => {
+        return button;
+    });
+});//将该对象转换为数组
+
+
+console.log(hasIsShowButtonAll2Array.value);
+
+const buttonIsProcessing = computed(() => {
+    return Object.fromEntries(Object.entries(buttons.value).filter(([prop, button]) => {
+        return button.hasOwnProperty('isProcessing');
+    }).map(([prop, button]) => {
+        return [prop, button.isProcessing];
+    }));
+});//找到所有有isProcessing属性的按钮，返回该按钮的isProcessing属性
+
+const buttonIsShow2IsShow = computed(() => {
+    return Object.fromEntries(Object.entries(buttons.value).filter(([prop, button]) => {
+        return button.hasOwnProperty('isShow');
+    }).map(([prop, button]) => {
+        return [prop, button.isShow];
+    }));
+});//找到所有有isShow属性的按钮，返回该按钮的isShow属性
+
+for (const prop in buttonIsProcessing.value) {
+    const watchedButton = computed(() => buttons.value[prop].isProcessing);
+    watch(watchedButton, (newValue, oldValue) => {
+        nextTick(() => {
+            updateProgressBar(prop);
+        });
+    });
+}//监听所有有isProcessing属性的按钮的isProcessing属性的变化
+
+const buttonClick = (event) => {
+    const id = event.currentTarget.id;
+    if (Object.keys(buttonIsProcessing.value).includes(id)) {
+        buttons.value[id].isProcessing = true;
+        setTimeout(() => {
+            buttons.value[id].isProcessing = false;
+        }, animationDurations.value[id] * 1000);
+    } else if (Object.keys(buttonIsShow2IsShow.value).includes(id)) {
+        buttons.value[id].isShow = false;
+    } else if (["ceshi1"].includes(id)) {
+        const time = new Date().getTime();
+        emit('data-transmission', id + "-" + time);
+    } else if (["ceshi"].includes(id)) {
+        count.value[id] += 1;
+        const badgeElement = document.querySelector('.el-badge__content');
+        console.log(badgeElement);
+        // const content = this.$refs.badge.$el.querySelector('.el-badge__content');
+        //获得屏幕分辨率
+        // const width = window.screen.width;
+        // let width = 1280
+        // console.log(width / 1920);
+        // if (count.value[id] > 999) {
+        //     content.style.right = '2.3rem';
+        // } else if (count.value[id] > 99) {
+        //     content.style.right = '1.9rem';
+        // } else if (count.value[id] > 9) {
+        //     content.style.right = '1.5rem';
+        // }
+    }
+}
+const updateProgressBar = (prop) => {
+    const progressBar = document.querySelector(`#${prop} .progress-bar`);
+    if (progressBar) {
+        progressBar.style.animationDuration = `${animationDurations.value[prop]}s`;
+    }
+}
+
+const generateRef = (prop) => {
+    return `${prop}Ref`;
+}
+const selectLanguage = (label) => {
+    i18n.global.locale = label;
+    emit('data-transmission', getInventorys());
 }
 </script>
 <style scoped>
@@ -144,8 +310,12 @@ export default {
     width: 100%;
 }
 
+.button-title {
+    padding-bottom: 1rem;
+}
+
 .button-style {
-    width: 10vw
+    width: 10vw;
 }
 
 .button-style,
@@ -155,7 +325,7 @@ export default {
 }
 
 .button-style:active {
-    background-color: #dddddddd;
+    background-color: #dddddd;
     border: 1px solid #000000;
 }
 
@@ -166,6 +336,36 @@ export default {
 
 .button-unusable {
     background: #eeeeee;
+}
+
+.progress-button {
+    position: relative;
+    background-color: #ffffff;
+    border: 1px solid #000000;
+    color: #000000;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background-color: #dddddd;
+    animation: progressBarAnimation 0s linear forwards;
+    z-index: -1;
+}
+
+@keyframes progressBarAnimation {
+    0% {
+        width: 0%;
+    }
+
+    100% {
+        width: 100%;
+    }
 }
 
 .el-badge {
@@ -185,5 +385,12 @@ export default {
     color: #000000;
     background-color: transparent;
     border: 0px;
+}
+
+#popover-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 </style>

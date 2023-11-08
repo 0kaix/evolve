@@ -5,58 +5,34 @@
 
   <div v-else>
     <div class="top-bar">
-      <div class=" version-number">
+      <div class="version-number">
         V0.0.1
       </div>
     </div>
     <div class="wrapper">
-      <Left :transferred-data="transferredData"></Left>
+      <Left :left-data="leftData"></Left>
       <Divider />
-      <Mid @transfer-data="transferData"></Mid>
+      <Mid @data-transmission="dataTransmission"></Mid>
       <Divider />
       <Right></Right>
     </div>
   </div>
 </template>
-<script>
+<script setup>
 import Divider from '@/components/Divider.vue'
 import Mid from './Mid.vue'
 import Left from './Left.vue'
 import Right from './Right.vue'
 import Mobile from './Mobile.vue'
-import isMobile from '@/utils/isMobile.js';
+import useIsMobile from '@/utils/isMobile.js';
+import { ref } from 'vue';
 
-
-export default {
-  mixins: [isMobile],
-  components: {
-    Divider,
-    Left,
-    Mid,
-    Right,
-    Mobile
-  },
-  data() {
-    return {
-      selectedComponent: null,
-      transferredData: ''
-    }
-  },
-  mounted() {
-
-  },
-  beforeDestroy() {
-
-  },
-  methods: {
-    showComponent(componentName) {
-      this.selectedComponent = componentName;
-    },
-    transferData(data) {
-      this.transferredData = data;
-    }
-  },
+const { isMobile } = useIsMobile();
+const leftData = ref('');
+const dataTransmission = (data) => {
+  leftData.value = data;
 }
+
 </script>
 
 <style>
