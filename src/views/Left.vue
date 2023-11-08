@@ -14,9 +14,10 @@
     <router-view />
 </template>
 <script setup>
-import useIsMobile from '@/utils/isMobile.js';
+import { useIsMobile } from '@/utils/isMobile.js';
 import { ref, watch, onMounted } from 'vue';
 import { getInventorys } from '@/js/inventory/index.js';
+import { saveInventoryData, saveOfflineTime } from '@/utils/save';
 
 
 const { isMobile } = useIsMobile();
@@ -34,33 +35,37 @@ watch(() => props.leftData, (newValue, oldValue) => {
     }
 })
 const refreshInventory = () => {
-    let saveCountDown = 5
+    // let saveCountDown = 5
     setInterval(() => {
         inventorys.value.forEach(item => {
             let rate = Number(item.rate.replace("/s", ""));
             if (rate != 0) {
                 item.count = item.count + rate;
-                item.count = Number(item.count.toFixed(5));
+                item.count = Number(item.count.toFixed(3));
             }
         })
-        saveCountDown--
-        if (saveCountDown == 0) {
-            saveInventoryData()
-            saveCountDown = 5
-        }
+        saveInventoryData(inventorys.value)
+        saveOfflineTime(new Date().getTime())
+        // saveCountDown--
+        // if (saveCountDown == 0) {
+        //     saveInventoryData(inventorys.value)
+        //     saveCountDown = 5
+        // }
     }, 1000)
 }
-const saveInventoryData = () => {
-    let inventorysDatas = []
-    inventorys.value.forEach(item => {
-        inventorysDatas.push({
-            id: item.id,
-            count: item.count,
-            rate: item.rate.replace("/s", "")
-        })
-    })
-    localStorage.setItem("inventorysDatas", JSON.stringify(inventorysDatas));
-}
+
+
+// const saveInventoryData = () => {
+//     let inventorysDatas = []
+//     inventorys.value.forEach(item => {
+//         inventorysDatas.push({
+//             id: item.id,
+//             count: item.count,
+//             rate: item.rate.replace("/s", "")
+//         })
+//     })
+//     localStorage.setItem("inventorysDatas", JSON.stringify(inventorysDatas));
+// }
 onMounted(() => {
     refreshInventory()
 })

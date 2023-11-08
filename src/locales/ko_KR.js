@@ -1,6 +1,11 @@
 export default {
     jinhua: "진화",
     shezhi: "설정",
+    huanying: "환영합니다. 오프라인 상태입니다.",
+    tian: "일",
+    xiaoshi: "시간",
+    fenzhong: "분",
+    miao: "초",
     weishengwu: "미생물",
     jinhuayinzi: "진화인자",
     tubianyinzi: "돌연변이인자",

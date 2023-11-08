@@ -51,9 +51,6 @@
                                 </el-badge>
                             </div>
                         </el-tab-pane>
-                        <el-tab-pane v-if="false" label="" name="1-2"></el-tab-pane>
-                        <el-tab-pane v-if="false" label="" name="1-3"></el-tab-pane>
-                        <el-tab-pane v-if="false" label="" name="1-4"></el-tab-pane>
                     </el-tabs>
                 </el-tab-pane>
                 <el-tab-pane :label="$t('shezhi')" name="2">
@@ -80,35 +77,41 @@
     <router-view />
 </template>
 <script setup>
-import useIsMobile from '@/utils/isMobile.js';
-import { i18n } from '@/main.js'
-import { ref, computed, watch, nextTick } from 'vue';
+import { useIsMobile } from '@/utils/isMobile.js';
+import i18n from '@/utils/i18n.js';
+import { ref, computed, watch, nextTick, onBeforeMount, onBeforeUnmount } from 'vue';
 import { getInventorys } from '@/js/inventory/index.js';
 import Popover from "@/components/Popover.vue";
 
 const { isMobile } = useIsMobile();
 
 const emit = defineEmits(['data-transmission'])
-const items = ref([
-    {
-        text: 'Button 1',
-        title: 'Title 1',
-        subtitle: 'Subtitle 1',
-        content: 'Content 1',
-    },
-    {
-        text: 'Button 2',
-        title: 'Title 2',
-        subtitle: 'Subtitle 2',
-        content: 'Content 2',
-    },
-    {
-        text: 'Button 3',
-        title: 'Title 3',
-        subtitle: 'Subtitle 3',
-        content: 'Content 3',
-    }
-])
+onBeforeMount(() => {
+    localStorage.removeItem("progress");
+});
+onBeforeUnmount(() => {
+    clearInterval(progressbarInterval);
+});
+// const items = ref([
+//     {
+//         text: 'Button 1',
+//         title: 'Title 1',
+//         subtitle: 'Subtitle 1',
+//         content: 'Content 1',
+//     },
+//     {
+//         text: 'Button 2',
+//         title: 'Title 2',
+//         subtitle: 'Subtitle 2',
+//         content: 'Content 2',
+//     },
+//     {
+//         text: 'Button 3',
+//         title: 'Title 3',
+//         subtitle: 'Subtitle 3',
+//         content: 'Content 3',
+//     }
+// ])
 const buttonRefList = ref([])
 const setButtonRef = element => {
     if (element) {
@@ -118,8 +121,6 @@ const setButtonRef = element => {
 const buttonRefs = computed(() => {
     return buttonRefList.value
 })
-
-const language = ref("简体中文")//语言
 const languages = ref([
     {
         value: 'zh-CN',
@@ -146,6 +147,12 @@ const languages = ref([
         label: '한국어'
     },
 ])//语言列表
+
+const languageCode = localStorage.getItem('language') || 'zh-CN';
+const language = languages.value.find(language => language.value === languageCode).label;
+
+
+
 const inventorys = ref(getInventorys())//库存
 const tabs = ref({
     active1: "1",
@@ -182,59 +189,57 @@ const buttons = ref({
     },
 })
 
-const animationDurations = ref({
+const progressbarDurations = ref({
     jinhuayinzi: 10,
 })//进度条动画时长
 
 const hasIsShowButtonAll = computed(() => {
-    return Object.fromEntries(Object.entries(buttons.value).filter(([prop, button]) => {
+    return Object.fromEntries(Object.entries(buttons.value).filter(([name, button]) => {
         return button.hasOwnProperty('isShow');
-    }).map(([prop, button]) => {
-        return [prop, button];
+    }).map(([name, button]) => {
+        return [name, button];
     }));
 });//找到所有有isShow属性的按钮，返回该按钮的对象
 
 const hasIsShowButtonAll2Array = computed(() => {
-    return Object.entries(hasIsShowButtonAll.value).map(([prop, button]) => {
+    return Object.entries(hasIsShowButtonAll.value).map(([name, button]) => {
         return button;
     });
 });//将该对象转换为数组
 
-
-console.log(hasIsShowButtonAll2Array.value);
-
-const buttonIsProcessing = computed(() => {
-    return Object.fromEntries(Object.entries(buttons.value).filter(([prop, button]) => {
+const hasIsProcessingButton = computed(() => {
+    return Object.fromEntries(Object.entries(buttons.value).filter(([name, button]) => {
         return button.hasOwnProperty('isProcessing');
-    }).map(([prop, button]) => {
-        return [prop, button.isProcessing];
+    }).map(([name, button]) => {
+        return [name, button.isProcessing];
     }));
 });//找到所有有isProcessing属性的按钮，返回该按钮的isProcessing属性
 
 const buttonIsShow2IsShow = computed(() => {
-    return Object.fromEntries(Object.entries(buttons.value).filter(([prop, button]) => {
+    return Object.fromEntries(Object.entries(buttons.value).filter(([name, button]) => {
         return button.hasOwnProperty('isShow');
-    }).map(([prop, button]) => {
-        return [prop, button.isShow];
+    }).map(([name, button]) => {
+        return [name, button.isShow];
     }));
 });//找到所有有isShow属性的按钮，返回该按钮的isShow属性
 
-for (const prop in buttonIsProcessing.value) {
-    const watchedButton = computed(() => buttons.value[prop].isProcessing);
+for (const name in hasIsProcessingButton.value) {
+    const watchedButton = computed(() => buttons.value[name].isProcessing);
     watch(watchedButton, (newValue, oldValue) => {
         nextTick(() => {
-            updateProgressBar(prop);
+            updateProgressBar(name);
         });
     });
 }//监听所有有isProcessing属性的按钮的isProcessing属性的变化
 
 const buttonClick = (event) => {
     const id = event.currentTarget.id;
-    if (Object.keys(buttonIsProcessing.value).includes(id)) {
+    if (Object.keys(hasIsProcessingButton.value).includes(id)) {
         buttons.value[id].isProcessing = true;
+        let progress = localStorage.getItem('progress') || 1;
         setTimeout(() => {
             buttons.value[id].isProcessing = false;
-        }, animationDurations.value[id] * 1000);
+        }, progressbarDurations.value[id] * (100 - parseFloat(progress)) / 100 * 1000);
     } else if (Object.keys(buttonIsShow2IsShow.value).includes(id)) {
         buttons.value[id].isShow = false;
     } else if (["ceshi1"].includes(id)) {
@@ -243,7 +248,6 @@ const buttonClick = (event) => {
     } else if (["ceshi"].includes(id)) {
         count.value[id] += 1;
         const badgeElement = document.querySelector('.el-badge__content');
-        console.log(badgeElement);
         // const content = this.$refs.badge.$el.querySelector('.el-badge__content');
         //获得屏幕分辨率
         // const width = window.screen.width;
@@ -258,18 +262,34 @@ const buttonClick = (event) => {
         // }
     }
 }
-const updateProgressBar = (prop) => {
-    const progressBar = document.querySelector(`#${prop} .progress-bar`);
-    if (progressBar) {
-        progressBar.style.animationDuration = `${animationDurations.value[prop]}s`;
-    }
+
+let progressbarInterval = ref()
+const updateProgressBar = (name) => {
+    const progressBar = document.querySelector(`#${name} .progress-bar`);
+    let progress = localStorage.getItem('progress') || 0;
+    progressbarInterval = setInterval(() => {
+        if (!progressBar) {
+            clearInterval(progressbarInterval);
+            return;
+        }
+        progress = parseFloat(progress) + 0.1;
+        progressBar.style.width = progress + '%';
+        localStorage.setItem('progress', progress);
+        if (progress > 100) {
+            clearInterval(progressbarInterval);
+            localStorage.removeItem('progress');
+        }
+    }, progressbarDurations.value[name]);
+
+
+    // if (progressBar) {
+    //     progressBar.style.animationDuration = `${progressbarDurations.value[name]}s`;
+    // }
 }
 
-const generateRef = (prop) => {
-    return `${prop}Ref`;
-}
 const selectLanguage = (label) => {
     i18n.global.locale = label;
+    localStorage.setItem('language', label);
     emit('data-transmission', getInventorys());
 }
 </script>
@@ -338,6 +358,7 @@ const selectLanguage = (label) => {
     background: #eeeeee;
 }
 
+/* 问题：切换标签页会导致进度条重置 */
 .progress-button {
     position: relative;
     background-color: #ffffff;
@@ -354,7 +375,7 @@ const selectLanguage = (label) => {
     width: 0%;
     height: 100%;
     background-color: #dddddd;
-    animation: progressBarAnimation 0s linear forwards;
+    /* animation: progressBarAnimation 0s linear forwards; */
     z-index: -1;
 }
 

@@ -1,6 +1,11 @@
 export default {
     jinhua: "Evolve",
     shezhi: "Setting",
+    huanying: "Welcome back, you are offline ",
+    tian: " Day ",
+    xiaoshi: " Hour ",
+    fenzhong: " Minute ",
+    miao: " Second ",
     weishengwu: "Microorganism",
     jinhuayinzi: "Evolve Factor",
     tubianyinzi: "Mutation Factor",

@@ -10,7 +10,7 @@
     <router-view />
 </template>
 <script setup>
-import useIsMobile from '@/utils/isMobile.js';
+import { useIsMobile } from '@/utils/isMobile.js';
 
 const { isMobile } = useIsMobile();
 

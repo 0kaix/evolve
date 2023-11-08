@@ -1,6 +1,11 @@
 export default {
     jinhua: "进化",
     shezhi: "设置",
+    huanying: "欢迎回来，您已离线",
+    tian: "天",
+    xiaoshi: "小时",
+    fenzhong: "分钟",
+    miao: "秒",
     weishengwu: "微生物",
     jinhuayinzi: "进化因子",
     tubianyinzi: "突变因子",
