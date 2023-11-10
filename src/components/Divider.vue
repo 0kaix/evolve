@@ -5,7 +5,7 @@
 .el-divider--vertical {
   display: inline-block;
   width: 1px;
-  height: 98vh;
+  height: 96vh;
   margin: 0 8px;
   vertical-align: middle;
   position: relative;

@@ -92,6 +92,8 @@ onBeforeMount(() => {
 onBeforeUnmount(() => {
     clearInterval(progressbarInterval);
 });
+
+
 // const items = ref([
 //     {
 //         text: 'Button 1',

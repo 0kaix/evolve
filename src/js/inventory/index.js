@@ -34,7 +34,6 @@ const getInventorysName = () => inventorysID.map(item => ({ id: item, name: tran
 //     return inventorysDatas
 // }
 const getInventorysData = () => {
-    // localStorage.clear("inventorysDatas")
     let localData = localStorage.getItem("inventorysDatas")
     let inventorysDatas = []
     if (localData && localData != undefined) {

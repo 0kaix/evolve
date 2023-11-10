@@ -5,7 +5,7 @@
 
   <div v-else>
     <div class="top-bar">
-      <div class="version-number">
+      <div class="bar-right">
         V0.0.1
       </div>
     </div>
@@ -15,6 +15,11 @@
       <Mid @data-transmission="dataTransmission"></Mid>
       <Divider />
       <Right></Right>
+    </div>
+    <div class="bottom-bar">
+      <div class="bar-right" @click="reset">
+        重置
+      </div>
     </div>
   </div>
 </template>
@@ -29,26 +34,37 @@ import { offlineTime, offlineTimeMessage } from '@/utils/offlineTime.js';
 import { ref } from 'vue';
 
 const { isMobile } = useIsMobile();
+ElNotification.success(offlineTimeMessage.value == undefined ? "欢迎您首次游玩本游戏" : offlineTimeMessage.value)
 
 const leftData = ref('');
 const dataTransmission = (data) => {
   leftData.value = data;
 }
 
-ElNotification.success(offlineTimeMessage.value)
-
+const reset = () => {
+  //弹窗警告
+  ElMessageBox.confirm('确定要重置游戏吗？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    localStorage.clear();
+    location.reload();
+  })
+}
 
 const inventorysDatas = JSON.parse(localStorage.getItem("inventorysDatas"));
-inventorysDatas.forEach(item => {
-  let rate = Number(item.rate.replace("/s", ""));
+if (inventorysDatas) {
+  inventorysDatas.forEach(item => {
+    let rate = Number(item.rate.replace("/s", ""));
+    if (rate > 0) {
+      item.count = Number(item.count) + (rate / 10 * offlineTime / 1000);
+      item.count = Number(item.count.toFixed(3));
+    }
+  });
+  localStorage.setItem("inventorysDatas", JSON.stringify(inventorysDatas));
+}
 
-  if (rate > 0) {
-    item.count = Number(item.count) + (rate / 10 * offlineTime / 1000);
-    console.log(item.count);
-    item.count = Number(item.count.toFixed(3));
-  }
-});
-localStorage.setItem("inventorysDatas", JSON.stringify(inventorysDatas));
 
 </script>
 
@@ -62,8 +78,12 @@ localStorage.setItem("inventorysDatas", JSON.stringify(inventorysDatas));
   background-color: rgba(0, 0, 0, 0.1)
 }
 
-.version-number {
+.bar-right {
   text-align: right;
   padding-right: 0.5rem;
+}
+
+.bottom-bar {
+  background-color: rgba(0, 0, 0, 0.1)
 }
 </style>
