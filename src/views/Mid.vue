@@ -93,27 +93,6 @@ onBeforeUnmount(() => {
     clearInterval(progressbarInterval);
 });
 
-
-// const items = ref([
-//     {
-//         text: 'Button 1',
-//         title: 'Title 1',
-//         subtitle: 'Subtitle 1',
-//         content: 'Content 1',
-//     },
-//     {
-//         text: 'Button 2',
-//         title: 'Title 2',
-//         subtitle: 'Subtitle 2',
-//         content: 'Content 2',
-//     },
-//     {
-//         text: 'Button 3',
-//         title: 'Title 3',
-//         subtitle: 'Subtitle 3',
-//         content: 'Content 3',
-//     }
-// ])
 const buttonRefList = ref([])
 const setButtonRef = element => {
     if (element) {
@@ -168,6 +147,10 @@ const buttons = ref({
         name: "jinhuayinzi",
         isProcessing: false,
     },
+    jinhuayinzi1: {
+        name: "jinhuayinzi",
+        isProcessing: false,
+    },
     weichi: {
         name: "weichi",
         title: 'Title 1',
@@ -196,40 +179,40 @@ const progressbarDurations = ref({
 })//进度条动画时长
 
 const hasIsShowButtonAll = computed(() => {
-    return Object.fromEntries(Object.entries(buttons.value).filter(([name, button]) => {
+    return Object.fromEntries(Object.entries(buttons.value).filter(([id, button]) => {
         return button.hasOwnProperty('isShow');
-    }).map(([name, button]) => {
-        return [name, button];
+    }).map(([id, button]) => {
+        return [id, button];
     }));
 });//找到所有有isShow属性的按钮，返回该按钮的对象
 
 const hasIsShowButtonAll2Array = computed(() => {
-    return Object.entries(hasIsShowButtonAll.value).map(([name, button]) => {
+    return Object.entries(hasIsShowButtonAll.value).map(([id, button]) => {
         return button;
     });
 });//将该对象转换为数组
 
 const hasIsProcessingButton = computed(() => {
-    return Object.fromEntries(Object.entries(buttons.value).filter(([name, button]) => {
+    return Object.fromEntries(Object.entries(buttons.value).filter(([id, button]) => {
         return button.hasOwnProperty('isProcessing');
-    }).map(([name, button]) => {
-        return [name, button.isProcessing];
+    }).map(([id, button]) => {
+        return [id, button.isProcessing];
     }));
 });//找到所有有isProcessing属性的按钮，返回该按钮的isProcessing属性
 
 const buttonIsShow2IsShow = computed(() => {
-    return Object.fromEntries(Object.entries(buttons.value).filter(([name, button]) => {
+    return Object.fromEntries(Object.entries(buttons.value).filter(([id, button]) => {
         return button.hasOwnProperty('isShow');
-    }).map(([name, button]) => {
-        return [name, button.isShow];
+    }).map(([id, button]) => {
+        return [id, button.isShow];
     }));
 });//找到所有有isShow属性的按钮，返回该按钮的isShow属性
 
-for (const name in hasIsProcessingButton.value) {
-    const watchedButton = computed(() => buttons.value[name].isProcessing);
+for (const id in hasIsProcessingButton.value) {
+    const watchedButton = computed(() => buttons.value[id].isProcessing);
     watch(watchedButton, (newValue, oldValue) => {
         nextTick(() => {
-            updateProgressBar(name);
+            updateProgressBar(id);
         });
     });
 }//监听所有有isProcessing属性的按钮的isProcessing属性的变化
@@ -238,10 +221,6 @@ const buttonClick = (event) => {
     const id = event.currentTarget.id;
     if (Object.keys(hasIsProcessingButton.value).includes(id)) {
         buttons.value[id].isProcessing = true;
-        let progress = localStorage.getItem('progress') || 1;
-        setTimeout(() => {
-            buttons.value[id].isProcessing = false;
-        }, progressbarDurations.value[id] * (100 - parseFloat(progress)) / 100 * 1000);
     } else if (Object.keys(buttonIsShow2IsShow.value).includes(id)) {
         buttons.value[id].isShow = false;
     } else if (["ceshi1"].includes(id)) {
@@ -264,29 +243,24 @@ const buttonClick = (event) => {
         // }
     }
 }
-
-let progressbarInterval = ref()
-const updateProgressBar = (name) => {
-    const progressBar = document.querySelector(`#${name} .progress-bar`);
-    let progress = localStorage.getItem('progress') || 0;
-    progressbarInterval = setInterval(() => {
+const updateProgressBar = (id) => {
+    const progressBar = document.querySelector(`#${id} .progress-bar`);
+    let progress = localStorage.getItem(id + '-progress') || 0;
+    const progressbarInterval = setInterval(() => {
         if (!progressBar) {
             clearInterval(progressbarInterval);
             return;
         }
         progress = parseFloat(progress) + 0.1;
         progressBar.style.width = progress + '%';
-        localStorage.setItem('progress', progress);
-        if (progress > 100) {
+        localStorage.setItem(id + '-progress', progress);
+        if (progress > progressbarDurations.value[id] * (100 - parseFloat(progress)) / 100 * 1000) {
             clearInterval(progressbarInterval);
-            localStorage.removeItem('progress');
+            progress = 0
+            localStorage.removeItem(id + '-progress');
+            buttons.value[id].isProcessing = false;
         }
-    }, progressbarDurations.value[name]);
-
-
-    // if (progressBar) {
-    //     progressBar.style.animationDuration = `${progressbarDurations.value[name]}s`;
-    // }
+    }, progressbarDurations.value[id]);
 }
 
 const selectLanguage = (label) => {
@@ -381,7 +355,7 @@ const selectLanguage = (label) => {
     z-index: -1;
 }
 
-@keyframes progressBarAnimation {
+/* @keyframes progressBarAnimation {
     0% {
         width: 0%;
     }
@@ -389,7 +363,7 @@ const selectLanguage = (label) => {
     100% {
         width: 100%;
     }
-}
+} */
 
 .el-badge {
     position: relative;
